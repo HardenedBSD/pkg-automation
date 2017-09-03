@@ -1,0 +1,12 @@
+{
+    "name": "hardenedbsd-master_amd64",
+    "version": "12-CURRENT",
+    "sync": {
+        "enabled": true,
+        "syncdir": "hardenedbsd-12-amd64"
+    },
+    "source": {
+        "path": "/tank/src/hbsd-12-current",
+        "conf": "/src/scripts/automation/config/hbsd-12-current.src.conf"
+    }
+}

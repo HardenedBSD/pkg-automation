@@ -1,0 +1,14 @@
+{
+    "cachedir": "/tmp/pkgcache",
+    "datadir": "/poudriere/jails/data/packages",
+    "signcmd": "/src/scripts/pkgsign.sh",
+    "mirrors": [
+        {
+            "name": "main",
+            "enabled": true,
+            "hostname": "pkg.hardenedbsd.org",
+            "user": "pkgsync",
+            "basedir": "/pkg"
+        }
+    ]
+}
