@@ -56,7 +56,7 @@ function main() {
     build_packages || exit 1
     sign_packages || exit 1
     sync_repo_metadata
-    check_mirrors
+    promote_mirrors
 }
 
 main ${0} $*

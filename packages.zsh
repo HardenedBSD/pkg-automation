@@ -45,3 +45,12 @@ function sign_packages() {
 
     return ${?}
 }
+
+function syncable() {
+    val=$(jq -r '.sync.enabled' /tmp/pkgrepo.conf)
+    if [ "${val}" = "true" ]; then
+        return 0
+    fi
+
+    return 1
+}

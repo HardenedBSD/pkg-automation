@@ -18,7 +18,8 @@ function main() {
     fi
 
     source ${TOPDIR}/../mirror.zsh
-    sync_package "${pkgname}"
+    source ${TOPDIR}/../packages.zsh
+    syncable && sync_package "${pkgname}"
 }
 
 main ${0} $*

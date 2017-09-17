@@ -108,7 +108,7 @@ function sync_repo_metadata() {
     return 0
 }
 
-function check_mirrors() {
+function promote_mirrors() {
     cachedir=$(jq -r .cachedir ${config})
     datadir=$(jq -r .datadir ${config})
     reponame=$(jq -r .name ${repo})
@@ -123,10 +123,19 @@ function check_mirrors() {
         if [ -f ${mirror}/syncfailed ]; then
             # 5 sync errors in a row means that artifact failed to sync entirely.
             # Less than 5 errors means the artifact did succeed in syncing.
-            if sort ${mirror}/syncfailed | uniq -c | awk '{print $1;}' | grep -c 5; then
+            if sort ${mirror}/syncfailed | uniq -c | awk '{print $1;}' | grep -q 5; then
                 echo "[-] Mirror ${name} failed to sync. Not promoting mirror." >&2
+                continue
             fi
         fi
+
+        syncdir=$(readlink ${mirror}/syncdir)
+        basedir=$(jq -r .basedir ${mirror}/config)
+        syncuser=$(jq -r .user ${mirror}/config)
+        synchost=$(jq -r .hostname ${mirror}/config)
+
+        ssh ${syncuser}@${synchost} \
+            "rm ${basedir}/${reponame} && ln -s ${syncdir} ${basedir}/${reponame}"
     done
 }
 
