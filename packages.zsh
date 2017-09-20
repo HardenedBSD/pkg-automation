@@ -27,6 +27,8 @@ function build_packages() {
         -j ${name} \
         -p "local" \
         -ca
+
+    return 0
 }
 
 function sign_packages() {

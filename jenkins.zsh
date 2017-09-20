@@ -16,13 +16,25 @@ function main() {
     source ${TOPDIR}/packages.zsh
     source ${TOPDIR}/mirror.zsh
 
-    while getopts 'c:r:' o; do
+    while getopts 'sc:r:' o; do
         case "${o}" in
             c)
                 config="${OPTARG}"
                 ;;
             r)
                 repo="${OPTARG}"
+                ;;
+            s)
+                if ! sign_packages; then
+                    echo "[-] Signing packages failed." >&2
+                    exit 1
+                fi
+                if ! sync_repo_metadata; then
+                    echo "[-] Could not sync repo metadata." >&2
+                    exit 1
+                fi
+                promote_mirrors
+                exit 0
                 ;;
         esac
     done
@@ -47,14 +59,38 @@ function main() {
         exit 1
     fi
 
-    cache_mirror_data || exit 1
-    clean_mirrors || exit 1
-    update_base_source || exit 1
-    update_ports || exit 1
-    build_world || exit 1
-    rebuild_jail || exit 1
-    build_packages || exit 1
-    sign_packages || exit 1
+    if ! cache_mirror_data; then
+        echo "[-] Could not cache mirror data." >&2
+        exit 1
+    fi
+    if ! clean_mirrors; then
+        echo "[-] Could not clean the mirrors." >&2
+        exit 1
+    fi
+    if ! update_base_source; then
+        echo "[-] Could not update the base source code." >&2
+        exit 1
+    fi
+    if ! update_ports; then
+        echo "[-] Could not update the ports tree." >&2
+        exit 1
+    fi
+    if ! build_world; then
+        echo "[-] Could not build world." >&2
+        exit 1
+    fi
+    if ! rebuild_jail; then
+        echo "[-] Could not rebuild the jail." >&2
+        exit 1
+    fi
+    if ! build_packages; then
+        echo "[-] Could not build packages." >&2
+        exit 1
+    fi
+    if ! sign_packages; then
+        echo "[-] Could not sign packages." >&2
+        exit 1
+    fi
     sync_repo_metadata
     promote_mirrors
 }
