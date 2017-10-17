@@ -31,7 +31,6 @@ function build_world() {
         make \
             -j$(sysctl -n hw.ncpu) \
             -s \
-            -DNO_CLEAN \
             buildworld
         exit ${?}
     )

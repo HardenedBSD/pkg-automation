@@ -3,8 +3,8 @@ function install_symlinks() {
     rm -f /tmp/pkgrepo.conf
     rm -f /tmp/pkgscripts
 
-    ln -s ${config} /tmp/pkgconfig.conf
-    ln -s ${repo} /tmp/pkgrepo.conf
+    ln -s $(realpath ${config}) /tmp/pkgconfig.conf
+    ln -s $(realpath ${repo}) /tmp/pkgrepo.conf
     ln -s ${TOPDIR} /tmp/pkgscripts
 }
 

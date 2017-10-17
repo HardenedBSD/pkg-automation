@@ -1,11 +1,12 @@
 function cache_mirror_data() {
+    pkgcache=$(jq -r '.cachedir' ${config})
+    rm -rf ${pkgcache}
+
     sync=$(jq -r .sync.enabled ${repo})
     if [ "${sync}" = "false" ]; then
         return 0
     fi
 
-    pkgcache=$(jq -r '.cachedir' ${config})
-    rm -rf ${pkgcache}
     mkdir -p ${pkgcache}/mirrors
 
     nmirrors=$(jq -r '.mirrors | length' ${config})

@@ -9,7 +9,7 @@ function get_topdir() {
 }
 
 function main() {
-    TOPDIR=$(get_topdir ${0})
+    TOPDIR=$(get_topdir ${1})
     shift
 
     source ${TOPDIR}/base.zsh
