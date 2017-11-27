@@ -2,6 +2,7 @@
     "cachedir": "/tmp/pkgcache",
     "datadir": "/poudriere/jails/data/packages",
     "signcmd": "/src/scripts/pkgsign.sh",
+    "urlbase": "http://jenkins.hardenedbsd.org/builds",
     "mirrors": [
         {
             "name": "main",

@@ -47,6 +47,13 @@ function rebuild_jail() {
     srcconf=$(jq -r '.source.conf' ${repo})
     makeconf=$(jq -r '.make_conf' ${repo})
 
+    src="src=${srcdir}"
+    url=$(jq -r '.urlbase' ${config})
+    if [ "${url}" != "null" ]; then
+        url="${url}$(jq -r '.urlsubdir' ${repo})"
+        src="url=${url}"
+    fi
+
     if [ "${srcconf}" = "null" ]; then
         srcconf="/dev/null"
     fi
@@ -60,7 +67,7 @@ function rebuild_jail() {
     fi
 
     poudriere jail -c -j ${name} \
-        -m src=${srcdir} \
+        -m ${src} \
         -p "local" \
         -v ${repover}
 

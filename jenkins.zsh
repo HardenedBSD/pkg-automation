@@ -9,6 +9,8 @@ function get_topdir() {
 }
 
 function main() {
+    local buildsrc
+
     TOPDIR=$(get_topdir ${1})
     shift
 
@@ -39,6 +41,8 @@ function main() {
         esac
     done
 
+    buildsrc=1
+
     if [ -z ${config} ]; then
         echo "[-] Please specify a config with the -c option." >&2
         exit 1
@@ -59,6 +63,14 @@ function main() {
         exit 1
     fi
 
+    url=$(jq -r '.urlbase' ${config})
+    if [ "${url}" != "null" ]; then
+        url=$(jq -r '.urlsubdir' ${repo})
+        if [ "${url}" != "null" ]; then
+            buildsrc=0
+        fi
+    fi
+
     if ! cache_mirror_data; then
         echo "[-] Could not cache mirror data." >&2
         exit 1
@@ -67,17 +79,21 @@ function main() {
         echo "[-] Could not clean the mirrors." >&2
         exit 1
     fi
-    if ! update_base_source; then
-        echo "[-] Could not update the base source code." >&2
-        exit 1
+    if [ ${buidsrc} -gt 0 ]; then
+        if ! update_base_source; then
+            echo "[-] Could not update the base source code." >&2
+            exit 1
+        fi
     fi
     if ! update_ports; then
         echo "[-] Could not update the ports tree." >&2
         exit 1
     fi
-    if ! build_world; then
-        echo "[-] Could not build world." >&2
-        exit 1
+    if [ ${buildsrc} -gt 0 ]; then
+        if ! build_world; then
+            echo "[-] Could not build world." >&2
+            exit 1
+        fi
     fi
     if ! rebuild_jail; then
         echo "[-] Could not rebuild the jail." >&2
