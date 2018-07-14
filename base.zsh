@@ -13,6 +13,7 @@ function build_world() {
     srcdir=$(jq -r '.source.path' ${repo})
     srcconf=$(jq -r '.source.conf' ${repo})
     makeconf=$(jq -r '.make_conf' ${repo})
+    baseclean=$(jq -r '.build.clean' ${repo})
 
     if [ "${srcconf}" != "null" ]; then
         cp ${srcconf} /etc/src.conf
@@ -26,11 +27,22 @@ function build_world() {
         rm -f /etc/make.conf
     fi
 
+    if [ "${baseclean}" != "null" ]; then
+        if [ "${baseclean}" = "false" ]; then
+            baseclean="-DNO_CLEAN"
+        else
+            baseclean=""
+        fi
+    else
+        baseclean=""
+    fi
+
     (
         cd ${srcdir}
         make \
             -j$(sysctl -n hw.ncpu) \
             -s \
+            ${baseclean} \
             buildworld
         exit ${?}
     )
@@ -46,6 +58,7 @@ function rebuild_jail() {
     repover=$(jq -r '.version' ${repo})
     srcconf=$(jq -r '.source.conf' ${repo})
     makeconf=$(jq -r '.make_conf' ${repo})
+    ports=$(jq -r .'ports' ${config})
 
     src="src=${srcdir}"
     url=$(jq -r '.urlbase' ${config})
@@ -62,13 +75,17 @@ function rebuild_jail() {
         makeconf="/dev/null"
     fi
 
+    if [ "${ports}" = "null" ]; then
+        ports="local"
+    fi
+
     if poudriere jail -l -n | grep -qFw ${name}; then
         yes | poudriere jail -j ${name} -d || return ${?}
     fi
 
     poudriere jail -c -j ${name} \
         -m ${src} \
-        -p "local" \
+        -p ${ports} \
         -v ${repover}
 
     return ${?}

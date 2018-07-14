@@ -10,7 +10,12 @@ function install_symlinks() {
 
 function update_ports() {
     (
-        cd /usr/ports
+        ports=$(jq -r '.ports' ${config})
+        if [ "${ports}" = "null" ]; then
+            ports="local"
+        fi
+        portsdir=$(poudriere ports -ql | grep ${ports} | awk '{print $3;}')
+        cd ${portsdir}
         git pull
         exit ${?}
     )
@@ -20,13 +25,33 @@ function update_ports() {
 
 function build_packages() {
     name=$(jq -r '.name' ${repo})
+    ports=$(jq -r '.ports' ${config})
+    njobs=$(jq -r '.jobs' ${config})
+    starttime=$(date '+%s')
+
+    if [ "${ports}" = "null" ]; then
+        ports="local"
+    fi
+
+    if [ "${njobs}" = "null" ]; then
+        njobs=""
+    else
+        njobs="-J ${njobs}"
+    fi
 
     install_symlinks
 
     poudriere bulk \
         -j ${name} \
-        -p "local" \
+        -p ${ports} \
+        ${njobs} \
         -ca
+
+    endtime=$(date '+%s')
+    deltatime=$((${endtime} - ${starttime}))
+    if [ ${deltatime} -lt 86400 ]; then
+        return 1
+    fi
 
     return 0
 }
