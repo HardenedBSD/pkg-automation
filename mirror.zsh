@@ -150,6 +150,11 @@ function sync_package() {
     reponame=$(jq -r .name /tmp/pkgrepo.conf)
 
     datadir="${datadir}/${reponame}-local/.building/All"
+    localpkg="${datadir}/${pkgname}.txz"
+    localhash=$(sha256 -q ${localpkg} 2> /dev/null)
+    if [ -z "${localhash}" ]; then
+        echo "${pkgname}" >> ${mirror}/syncfailed
+    fi
 
     for mirror in $(find ${cachedir}/mirrors -type d); do
         if [ ! -f ${mirror}/config ]; then
@@ -161,9 +166,10 @@ function sync_package() {
         synchost=$(jq -r .hostname ${mirror}/config)
 
         for ((i=0; i < 5; i++)); do
-            scp ${datadir}/${pkgname}.txz ${syncuser}@${synchost}:${syncdir}/All/
-            res=${?}
-            if [ ${res} -eq 0 ]; then
+            scp ${localpkg} ${syncuser}@${synchost}:${syncdir}/All/
+
+            remotehash=$(ssh ${syncuser}@${synchost} sha256 -q ${syncdir}/All/${pkgname}.txz 2> /dev/null)
+            if [ "${localhash}" = "${remotehash}" ]; then
                 break
             fi
 
